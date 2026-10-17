@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Tasks{% endblock %}
+{% block heading %}{{ status or "All" }} Tasks{% endblock %}
+
+{% block content %}
+{# GET form: the filters become the URL, e.g. /tasks?search=milk&priority=High #}
+<form method="get" action="{{ url_for('tasks') }}" class="card filters">
+  <input type="search" name="search" value="{{ search }}" placeholder="Search by title…">
+  <select name="status">
+    <option value="">All statuses</option>
+    {% for s in STATUSES %}<option value="{{ s }}" {{ 'selected' if s == status }}>{{ s }}</option>{% endfor %}
+  </select>
+  <select name="priority">
+    <option value="">All priorities</option>
+    {% for p in PRIORITIES %}<option value="{{ p }}" {{ 'selected' if p == priority }}>{{ p }}</option>{% endfor %}
+  </select>
+  <select name="sort">
+    <option value="created_desc" {{ 'selected' if sort == 'created_desc' }}>Newest created</option>
+    <option value="created_asc" {{ 'selected' if sort == 'created_asc' }}>Oldest created</option>
+    <option value="due_asc" {{ 'selected' if sort == 'due_asc' }}>Due date (soonest)</option>
+    <option value="due_desc" {{ 'selected' if sort == 'due_desc' }}>Due date (latest)</option>
+  </select>
+  <button type="submit" class="btn">Apply</button>
+  <a href="{{ url_for('tasks') }}" class="btn btn-ghost">Reset</a>
+</form>
+
+{% if tasks %}
+<section class="task-grid">
+  {% for task in tasks %}
+  <article class="card task {{ 'completed' if task.status == 'Completed' }}">
+    <div class="row-between">
+      <h3>{{ task.title }}</h3>
+      <div class="badges">
+        <span class="badge priority-{{ task.priority|lower }}">{{ task.priority }}</span>
+        <span class="badge status-{{ task.status|lower|replace(' ', '-') }}">{{ task.status }}</span>
+      </div>
+    </div>
+    <p class="desc">{{ task.description or "No description." }}</p>
+    <p class="meta">
+      📅 Due:
+      {% if task.due_date %}
+        <span class="{{ 'overdue' if task.due_date < today and task.status != 'Completed' }}">{{ task.due_date }}{{ ' (overdue)' if task.due_date < today and task.status != 'Completed' }}</span>
+      {% else %}<span class="muted">No due date</span>{% endif %}
+      · Created {{ task.created_at[:10] }}
+    </p>
+    <div class="actions">
+      {% if task.status != 'Completed' %}
+      <form method="post" action="{{ url_for('complete_task', task_id=task.id) }}">
+        <button type="submit" class="btn btn-small btn-success">✓ Complete</button>
+      </form>
+      {% endif %}
+      <a class="btn btn-small btn-ghost" href="{{ url_for('edit_task', task_id=task.id) }}">Edit</a>
+      <form method="post" action="{{ url_for('delete_task', task_id=task.id) }}" data-confirm="Delete “{{ task.title }}”? This cannot be undone.">
+        <button type="submit" class="btn btn-small btn-danger">Delete</button>
+      </form>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% else %}
+<div class="card empty">
+  {% if search or status or priority %}
+    No tasks match your filters. <a href="{{ url_for('tasks') }}">Clear filters</a>.
+  {% else %}
+    You have no tasks yet. <a href="{{ url_for('add_task') }}">Add your first one</a>.
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

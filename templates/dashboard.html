@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+
+{% block content %}
+<section class="cards">
+  <div class="card stat"><span class="stat-label">Total tasks</span><span class="stat-number">{{ stats.total }}</span></div>
+  <div class="card stat"><span class="stat-label">Pending</span><span class="stat-number">{{ stats.pending }}</span></div>
+  <div class="card stat"><span class="stat-label">In progress</span><span class="stat-number">{{ stats.in_progress }}</span></div>
+  <div class="card stat"><span class="stat-label">Completed</span><span class="stat-number">{{ stats.completed }}</span></div>
+</section>
+
+<section class="card">
+  <div class="row-between">
+    <h2>Completion</h2>
+    <strong>{{ stats.percent }}%</strong>
+  </div>
+  <div class="progress" role="progressbar" aria-valuenow="{{ stats.percent }}" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar" style="width: {{ stats.percent }}%"></div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="row-between">
+    <h2>Recently created</h2>
+    <a class="btn btn-small" href="{{ url_for('add_task') }}">+ New task</a>
+  </div>
+  {% if recent %}
+    <ul class="recent-list">
+      {% for task in recent %}
+      <li>
+        <div>
+          <a href="{{ url_for('edit_task', task_id=task.id) }}" class="{{ 'done-text' if task.status == 'Completed' }}">{{ task.title }}</a>
+          <small class="muted">Created {{ task.created_at[:10] }}</small>
+        </div>
+        <div class="badges">
+          <span class="badge priority-{{ task.priority|lower }}">{{ task.priority }}</span>
+          <span class="badge status-{{ task.status|lower|replace(' ', '-') }}">{{ task.status }}</span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="empty">No tasks yet. <a href="{{ url_for('add_task') }}">Create your first task</a>.</div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}TaskFlow{% endblock %} · TaskFlow</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    /* Apply saved theme before the page paints (prevents a white flash). */
+    if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark";
+  </script>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">✔ TaskFlow</div>
+    <nav>
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if active == 'dashboard' }}">📊 Dashboard</a>
+      <a href="{{ url_for('tasks') }}" class="{{ 'active' if active == 'all' }}">📋 All Tasks</a>
+      <a href="{{ url_for('tasks', status='Pending') }}" class="{{ 'active' if active == 'Pending' }}">⏳ Pending</a>
+      <a href="{{ url_for('tasks', status='In Progress') }}" class="{{ 'active' if active == 'In Progress' }}">🚧 In Progress</a>
+      <a href="{{ url_for('tasks', status='Completed') }}" class="{{ 'active' if active == 'Completed' }}">✅ Completed</a>
+      <a href="{{ url_for('add_task') }}" class="{{ 'active' if active == 'add' }}">➕ Add Task</a>
+    </nav>
+    <button type="button" class="theme-toggle" id="theme-toggle">🌙 Dark mode</button>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button type="button" class="menu-btn" id="menu-btn" aria-label="Toggle menu">☰</button>
+      <span class="topbar-title">{% block heading %}{% endblock %}</span>
+    </header>
+
+    <main class="content">
+      {# Flash messages: set with flash() in app.py #}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" role="alert">
+            <span>{{ message }}</span>
+            <button type="button" class="alert-close" aria-label="Dismiss">×</button>
+          </div>
+        {% endfor %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
